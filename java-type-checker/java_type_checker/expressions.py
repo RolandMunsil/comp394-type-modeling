@@ -94,6 +94,11 @@ class MethodCall(Expression):
         Validates the structure of this expression, checking for any logical inconsistencies in the
         child nodes and the operation this expression applies to them.
         """
+        # Recursively check the types of the rest of the expressions
+        self.receiver.check_types()
+        for arg in self.args:
+            arg.check_types()
+
         receiver_type = self.receiver.static_type()
 
         # Check that methods can be called on the receiver
@@ -120,11 +125,6 @@ class MethodCall(Expression):
                         self.method_name,
                         names(expected_arg_types),
                         names([a.static_type() for a in self.args])))
-        
-        # Recursively check the types of the rest of the expressions
-        self.receiver.check_types()
-        for arg in self.args:
-            arg.check_types()
 
 class ConstructorCall(Expression):
     """
@@ -146,8 +146,12 @@ class ConstructorCall(Expression):
         Validates the structure of this expression, checking for any logical inconsistencies in the
         child nodes and the operation this expression applies to them.
         """
+        # Recursively check the types of the rest of the expressions
+        for arg in self.args:
+            arg.check_types()
+
         # Check that the type is instantiable
-        if not self.instantiated_type.is_subtype_of(Type.object):
+        if not self.instantiated_type.is_instantiable:
             raise JavaTypeError(
                 "Type {0} is not instantiable".format(self.instantiated_type.name))
 
@@ -169,9 +173,7 @@ class ConstructorCall(Expression):
                         names(expected_arg_types),
                         names([a.static_type() for a in self.args])))
 
-        # Recursively check the types of the rest of the expressions
-        for arg in self.args:
-            arg.check_types()
+
 
 
 class JavaTypeError(Exception):

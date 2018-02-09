@@ -77,11 +77,15 @@ class NullType(Type):
     """
     def __init__(self):
         super().__init__("null")
+        self.is_instantiable = False
 
     def is_subtype_of(self, other):
         """ True if this type can be used where the other type is expected.
         """
         return other.is_subtype_of(Type.object)
+    
+    def method_named(self, name):
+        raise NoSuchMethod("Cannot invoke method {0}() on null)".format(name))
 
 
 class NoSuchMethod(Exception):
